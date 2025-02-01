@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 
-function ChatInterface({ messages, loading, onContinue }) {
+function ChatInterface({ messages, loading, onContinue, debateTitle }) {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -17,9 +17,13 @@ function ChatInterface({ messages, loading, onContinue }) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
-      <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">AI Debate Arena</h1>
-      <div className="space-y-6 h-[70vh] overflow-y-auto">
+    <div className="flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center w-full sticky top-0 bg-white">
+        <h1 className="text-3xl font-bold text-center py-3 text-gray-800">
+          {debateTitle || 'AI Debate Arena'}
+        </h1>
+      </div>
+      <div className="max-w-2xl space-y-6 h-full">
         {messages.map((message, index) => (
           <div 
             key={index} 
@@ -59,25 +63,27 @@ function ChatInterface({ messages, loading, onContinue }) {
         <div ref={messagesEndRef} />
       </div>
 
-      <button
-        onClick={onContinue}
-        disabled={loading}
-        className={`
-          mt-4 px-6 py-2 rounded-lg
-          bg-blue-600 text-white
-          hover:bg-blue-700
-          disabled:bg-blue-300
-          transition-colors
-          flex items-center justify-center
-          w-full
-        `}
-      >
-        {loading ? (
-          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-        ) : (
-          'Continue Debate'
-        )}
-      </button>
+      <div className="w-full sticky bottom-0 bg-white">
+        <button
+          onClick={onContinue}
+          disabled={loading}
+          className={`
+            mt-4 px-6 py-2 rounded-lg
+            bg-blue-600 text-white
+            hover:bg-blue-700
+            disabled:bg-blue-300
+            transition-colors
+            flex items-center justify-center
+            w-full
+          `}
+        >
+          {loading ? (
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            'Continue Debate'
+          )}
+        </button>
+      </div>
     </div>
   );
 }

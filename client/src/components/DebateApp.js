@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DebateSetup from './DebateSetup';
 import ChatInterface from './ChatInterface';
-import { startDebate, continueDebate } from '../services/api';
+import { startDebate, continueDebate, generateTitle } from '../services/api';
 
 function DebateApp() {
   const [messages, setMessages] = useState([]);
@@ -10,6 +10,7 @@ function DebateApp() {
   const [proAI, setProAI] = useState('claude');
   const [conAI, setConAI] = useState('gpt');
   const [loading, setLoading] = useState(false);
+  const [debateTitle, setDebateTitle] = useState('');
 
   const handleStartDebate = async (setupData) => {
     setLoading(true);
@@ -20,6 +21,16 @@ function DebateApp() {
       setConAI(conAI);
       
       const response = await startDebate(topic, proAI, conAI);
+      
+      // Generate title using the API service
+      try {
+        const titleResponse = await generateTitle(response.message);
+        setDebateTitle(titleResponse.title);
+      } catch (titleError) {
+        console.error('Error generating title:', titleError);
+        setDebateTitle(topic); // Fallback to using the topic as the title
+      }
+      
       setMessages([{
         content: response.message,
         ai: response.ai,
@@ -74,20 +85,23 @@ function DebateApp() {
   };
 
   return (
-    <div className="">
-      <div className="">
-        {!isDebating ? (
-          <DebateSetup onStart={handleStartDebate} />
-        ) : (
-          <ChatInterface
-            messages={messages}
-            loading={loading}
-            onContinue={handleContinueDebate}
-            proAI={proAI}
-            conAI={conAI}
-          />
-        )}
-      </div>
+    <div className="w-full h-full">
+      {!isDebating ? (
+        <div className="max-w-lg mx-auto">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <DebateSetup onStart={handleStartDebate} />
+          </div>
+        </div>
+      ) : (
+        <ChatInterface
+          messages={messages}
+          loading={loading}
+          onContinue={handleContinueDebate}
+          proAI={proAI}
+          conAI={conAI}
+          debateTitle={debateTitle}
+        />
+      )}
     </div>
   );
 }
