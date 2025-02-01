@@ -1,14 +1,4 @@
 import React, { useState } from 'react';
-import {
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Typography
-} from '@mui/material';
 
 function DebateSetup({ onStart }) {
   const [topic, setTopic] = useState('');
@@ -21,53 +11,55 @@ function DebateSetup({ onStart }) {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Set Up AI Debate
-      </Typography>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <h2 className="text-2xl font-semibold">Set Up AI Debate</h2>
       
-      <TextField
+      <input
         required
-        label="Debate Topic"
+        placeholder="Debate Topic"
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        fullWidth
+        className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      <FormControl fullWidth>
-        <InputLabel>Pro Side AI</InputLabel>
-        <Select
+      <div className="flex flex-col gap-2">
+        <label className="text-sm text-gray-600">Pro Side AI</label>
+        <select
           value={proAI}
-          label="Pro Side AI"
           onChange={(e) => setProAI(e.target.value)}
+          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <MenuItem value="claude">Claude</MenuItem>
-          <MenuItem value="gpt">GPT-4</MenuItem>
-        </Select>
-      </FormControl>
+          <option value="claude">Claude</option>
+          <option value="gpt">GPT-4</option>
+        </select>
+      </div>
 
-      <FormControl fullWidth>
-        <InputLabel>Con Side AI</InputLabel>
-        <Select
+      <div className="flex flex-col gap-2">
+        <label className="text-sm text-gray-600">Con Side AI</label>
+        <select
           value={conAI}
-          label="Con Side AI"
           onChange={(e) => setConAI(e.target.value)}
+          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <MenuItem value="claude">Claude</MenuItem>
-          <MenuItem value="gpt">GPT-4</MenuItem>
-        </Select>
-      </FormControl>
+          <option value="claude">Claude</option>
+          <option value="gpt">GPT-4</option>
+        </select>
+      </div>
 
-      <Button
+      <button
         type="submit"
-        variant="contained"
-        color="primary"
-        size="large"
         disabled={!topic}
+        className={`
+          px-6 py-3 rounded-lg text-lg
+          bg-blue-600 text-white
+          hover:bg-blue-700
+          disabled:bg-blue-300
+          transition-colors
+        `}
       >
         Start Debate
-      </Button>
-    </Box>
+      </button>
+    </form>
   );
 }
 

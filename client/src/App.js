@@ -1,23 +1,11 @@
 import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material';
 import DebateApp from './components/DebateApp';
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <div className="min-h-screen bg-gray-50">
       <DebateApp />
-    </ThemeProvider>
+    </div>
   );
 }
 

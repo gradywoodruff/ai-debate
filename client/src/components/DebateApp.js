@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Container, Paper, Box } from '@mui/material';
 import DebateSetup from './DebateSetup';
 import ChatInterface from './ChatInterface';
 import { startDebate, continueDebate } from '../services/api';
@@ -75,23 +74,21 @@ function DebateApp() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
-        <Paper elevation={3} sx={{ p: 3 }}>
-          {!isDebating ? (
-            <DebateSetup onStart={handleStartDebate} />
-          ) : (
-            <ChatInterface
-              messages={messages}
-              loading={loading}
-              onContinue={handleContinueDebate}
-              proAI={proAI}
-              conAI={conAI}
-            />
-          )}
-        </Paper>
-      </Box>
-    </Container>
+    <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        {!isDebating ? (
+          <DebateSetup onStart={handleStartDebate} />
+        ) : (
+          <ChatInterface
+            messages={messages}
+            loading={loading}
+            onContinue={handleContinueDebate}
+            proAI={proAI}
+            conAI={conAI}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 

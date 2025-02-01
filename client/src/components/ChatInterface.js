@@ -1,14 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  CircularProgress
-} from '@mui/material';
 
-function ChatInterface({ messages, loading, onContinue, proAI, conAI }) {
-  console.log('ChatInterface rendering with messages:', messages);
+function ChatInterface({ messages, loading, onContinue }) {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -20,59 +12,47 @@ function ChatInterface({ messages, loading, onContinue, proAI, conAI }) {
   }, [messages]);
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: 2,
-      height: '70vh'  // Set a fixed height
-    }}>
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: 2, 
-        flexGrow: 1,  // Take up available space
-        overflowY: 'auto', 
-        p: 2,
-        minHeight: 0  // Important for flex container
-      }}>
-        {messages.map((message, index) => {
-          console.log('Rendering message:', message, 'at index:', index);
-          return (
-            <Paper
-              key={index}
-              elevation={1}
-              sx={{
-                p: 2,
-                maxWidth: '80%',
-                alignSelf: message.role === 'pro' ? 'flex-start' : 'flex-end',
-                backgroundColor: message.role === 'pro' ? '#e3f2fd' : '#fce4ec',
-                wordBreak: 'break-word'  // Ensure long text wraps properly
-              }}
-            >
-              <Typography variant="caption" display="block" gutterBottom>
-                {message.ai.toUpperCase()} ({message.role.toUpperCase()})
-              </Typography>
-              <Typography>{message.content}</Typography>
-            </Paper>
-          );
-        })}
+    <div className="flex flex-col gap-4 h-[70vh]">
+      <div className="flex flex-col gap-4 flex-grow overflow-y-auto p-4 min-h-0">
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`p-4 max-w-[80%] rounded-lg shadow ${
+              message.role === 'pro' 
+                ? 'bg-pro-bg self-start' 
+                : 'bg-con-bg self-end'
+            }`}
+          >
+            <div className="text-sm text-gray-600 mb-1">
+              {message.ai.toUpperCase()} ({message.role.toUpperCase()})
+            </div>
+            <div className="break-words">
+              {message.content}
+            </div>
+          </div>
+        ))}
         <div ref={messagesEndRef} />
-      </Box>
+      </div>
 
-      <Button
-        variant="contained"
-        color="primary"
+      <button
         onClick={onContinue}
         disabled={loading}
-        sx={{ mt: 2 }}
+        className={`
+          mt-2 px-6 py-2 rounded-lg
+          bg-blue-600 text-white
+          hover:bg-blue-700
+          disabled:bg-blue-300
+          transition-colors
+          flex items-center justify-center
+        `}
       >
         {loading ? (
-          <CircularProgress size={24} color="inherit" />
+          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
           'Continue Debate'
         )}
-      </Button>
-    </Box>
+      </button>
+    </div>
   );
 }
 
