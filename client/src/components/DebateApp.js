@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DebateSetup from './DebateSetup';
 import ChatInterface from './ChatInterface';
-import { startDebate, continueDebate, generateTitle } from '../services/api';
+import { startDebate, continueDebate } from '../services/api';
 
 function DebateApp() {
   const [messages, setMessages] = useState([]);
@@ -15,30 +15,23 @@ function DebateApp() {
   const handleStartDebate = async (setupData) => {
     setLoading(true);
     try {
-      const { topic, proAI, conAI } = setupData;
+      const { topic, proAI, conAI, firstSpeaker, analysis } = setupData;
       setTopic(topic);
       setProAI(proAI);
       setConAI(conAI);
+      setDebateTitle(analysis.title);
       
-      const response = await startDebate(topic, proAI, conAI);
-      
-      // Generate title using the API service
-      try {
-        const titleResponse = await generateTitle(response.message);
-        setDebateTitle(titleResponse.title);
-      } catch (titleError) {
-        console.error('Error generating title:', titleError);
-        setDebateTitle(topic); // Fallback to using the topic as the title
-      }
+      const currentAI = firstSpeaker === 'pro' ? proAI : conAI;
+      const response = await startDebate(topic, currentAI, firstSpeaker);
       
       setMessages([{
         content: response.message,
         ai: response.ai,
-        role: response.role
+        role: firstSpeaker
       }]);
       setIsDebating(true);
     } catch (error) {
-      console.error('Error starting debate:', error.response?.data || error.message);
+      console.error('Error starting debate:', error);
       alert('Failed to start debate. Please try again.');
     }
     setLoading(false);
@@ -98,10 +91,8 @@ function DebateApp() {
   return (
     <div className="w-full h-full">
       {!isDebating ? (
-        <div className="max-w-lg mx-auto h-screen flex items-center justify-center">
-          <div className="bg-white w-96">
-            <DebateSetup onStart={handleStartDebate} />
-          </div>
+        <div className="mx-auto h-screen flex items-center justify-center">
+          <DebateSetup onStart={handleStartDebate} />
         </div>
       ) : (
         <ChatInterface

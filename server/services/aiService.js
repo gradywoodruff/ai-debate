@@ -140,14 +140,14 @@ const callGPT = async (prompt, retryCount = 0) => {
   }
 };
 
-const startDebate = async (topic, proAI, conAI) => {
-  const prompt = generatePrompt(topic, [], true);
-  const response = await (proAI === 'claude' ? callClaude(prompt) : callGPT(prompt));
+const startDebate = async (topic, currentAI, firstSpeaker) => {
+  const prompt = generatePrompt(topic, [], firstSpeaker === 'pro');
+  const response = await (currentAI === 'claude' ? callClaude(prompt) : callGPT(prompt));
   
   return {
     message: response,
-    ai: proAI,
-    role: 'pro'
+    ai: currentAI,
+    role: firstSpeaker
   };
 };
 
