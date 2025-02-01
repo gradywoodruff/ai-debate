@@ -12,22 +12,26 @@ const generatePrompt = (topic, history, isProSide) => {
   const stance = isProSide ? 'supporting' : 'opposing';
   const context = `You are participating in a debate ${stance} the following topic: "${topic}".
                    Your role is to provide thoughtful arguments while addressing points made by your opponent.
+                   When the moderator (human) interjects with questions or points, address them directly in your response.
                    Keep responses under 150 words.`;
   
   if (history.length === 0) {
     return `${context}\n\nMake your opening argument.`;
   }
   
-  // Clearly label each message in the conversation history with roles
+  // Update the formatting to include moderator messages
   const formattedHistory = history.map((msg, index) => {
-    const role = index % 2 === 0 ? 'Supporter' : 'Opponent';
+    if (msg.role === 'moderator') {
+      return `Moderator: ${msg.content}`;
+    }
+    const role = msg.role === 'pro' ? 'Supporter' : 'Opponent';
     return `${role} (${msg.ai}): ${msg.content}`;
   }).join('\n\n');
   
   return `${context}\n\n
 Current Debate History:
 ${formattedHistory}\n\n
-You are the ${isProSide ? 'Supporter' : 'Opponent'}. Provide your next argument, addressing the points made in the previous messages.`;
+You are the ${isProSide ? 'Supporter' : 'Opponent'}. Provide your next argument, addressing the points made in the previous messages, including any moderator interjections.`;
 };
 
 // Rate limiter implementation
