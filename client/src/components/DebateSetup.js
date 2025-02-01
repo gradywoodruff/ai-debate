@@ -19,31 +19,32 @@ function DebateSetup({ onStart }) {
         placeholder="Debate Topic"
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
 
-      <div className="flex flex-col gap-2">
-        <label className="text-sm text-gray-600">Pro Side AI</label>
-        <select
-          value={proAI}
-          onChange={(e) => setProAI(e.target.value)}
-          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="claude">Claude</option>
-          <option value="gpt">GPT-4</option>
-        </select>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label className="text-sm text-gray-600">Con Side AI</label>
-        <select
-          value={conAI}
-          onChange={(e) => setConAI(e.target.value)}
-          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="claude">Claude</option>
-          <option value="gpt">GPT-4</option>
-        </select>
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className="text-sm text-gray-600">For</label>
+          <select
+            value={proAI}
+            onChange={(e) => setProAI(e.target.value)}
+            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="claude">Claude</option>
+            <option value="gpt">GPT-4</option>
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="text-sm text-gray-600">Against</label>
+          <select
+            value={conAI}
+            onChange={(e) => setConAI(e.target.value)}
+            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="claude">Claude</option>
+            <option value="gpt">GPT-4</option>
+          </select>
+        </div>
       </div>
 
       <button
@@ -51,9 +52,9 @@ function DebateSetup({ onStart }) {
         disabled={!topic}
         className={`
           px-6 py-3 rounded-lg text-lg
-          bg-blue-600 text-white
-          hover:bg-blue-700
-          disabled:bg-blue-300
+          bg-purple-600 text-white
+          hover:bg-purple-400
+          disabled:bg-purple-300
           transition-colors
         `}
       >

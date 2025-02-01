@@ -98,8 +98,8 @@ function DebateApp() {
   return (
     <div className="w-full h-full">
       {!isDebating ? (
-        <div className="max-w-lg mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="max-w-lg mx-auto h-screen flex items-center justify-center">
+          <div className="bg-white w-96">
             <DebateSetup onStart={handleStartDebate} />
           </div>
         </div>
