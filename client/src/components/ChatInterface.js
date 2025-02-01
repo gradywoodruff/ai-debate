@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
 
-function ChatInterface({ messages, loading, onContinue, debateTitle, proAI, conAI, onInterject }) {
+function ChatInterface({ messages, loading, onContinue, proAI, conAI, onInterject, firstSpeaker }) {
   const messagesEndRef = useRef(null);
   const [showInterjectModal, setShowInterjectModal] = useState(false);
   const [interjection, setInterjection] = useState('');
@@ -31,18 +31,16 @@ function ChatInterface({ messages, loading, onContinue, debateTitle, proAI, conA
     setShowInterjectModal(false);
   };
 
-  if (!messages || messages.length === 0) {
-    return <div className="text-center p-4">No messages to display.</div>
-  }
+  // Determine who's typing
+  const getTypingRole = () => {
+    if (!messages.length) return firstSpeaker; // Use firstSpeaker instead of defaulting to 'pro'
+    const lastMessage = messages[messages.length - 1];
+    return lastMessage.role === 'pro' ? 'con' : 'pro';
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="flex flex-col items-center justify-center w-full sticky top-0 bg-white">
-        <h1 className="text-3xl font-bold text-center py-3 text-gray-800">
-          {debateTitle || 'AI Debate Arena'}
-        </h1>
-      </div>
-      <div className="max-w-2xl space-y-6 h-full min-h-screen py-3">
+    <div className="flex flex-col items-center justify-center min-h-full flex-grow">
+      <div className="w-full space-y-6 h-full flex-grow py-12" style={{ maxWidth: '1000px' }}>
         {messages.map((message, index) => (
           message.role === 'moderator' ? (
             // Moderator message - centered with no bubble
@@ -75,7 +73,9 @@ function ChatInterface({ messages, loading, onContinue, debateTitle, proAI, conA
                   ) : (
                     <ThumbsDown className="w-5 h-5 mb-1" />
                   )}
-                  <div className="text-xs font-medium">{message.ai}</div>
+                  <div className="text-xs font-medium">
+                    {message.ai || (message.role === 'pro' ? proAI : conAI)}
+                  </div>
                 </div>
                 <div
                   className={`p-4 rounded-2xl bg-white ${
@@ -92,6 +92,48 @@ function ChatInterface({ messages, loading, onContinue, debateTitle, proAI, conA
             </div>
           )
         ))}
+        
+        {/* Typing Indicator */}
+        {(loading || (!messages.length)) && (
+          <div 
+            className={`flex ${getTypingRole() === 'pro' ? "justify-start" : "justify-end"}`}
+          >
+            <div
+              className={`max-w-[70%] flex items-end gap-2 ${
+                getTypingRole() === 'pro' ? "flex-row" : "flex-row-reverse"
+              }`}
+            >
+              <div
+                className={`flex flex-col items-center ${
+                  getTypingRole() === 'pro' ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {getTypingRole() === 'pro' ? (
+                  <ThumbsUp className="w-5 h-5 mb-1" />
+                ) : (
+                  <ThumbsDown className="w-5 h-5 mb-1" />
+                )}
+                <div className="text-xs font-medium">
+                  {getTypingRole() === 'pro' ? proAI : conAI}
+                </div>
+              </div>
+              <div
+                className={`p-4 rounded-2xl bg-white ${
+                  getTypingRole() === 'pro'
+                    ? "border border-green-400 border-l-[6px]"
+                    : "border border-red-400 border-r-[6px]"
+                }`}
+              >
+                <div className="flex space-x-1 h-5 items-center">
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -99,14 +141,14 @@ function ChatInterface({ messages, loading, onContinue, debateTitle, proAI, conA
         <div className="flex gap-4">
           <button
             onClick={onContinue}
-            disabled={loading}
+            disabled={loading || !messages.length}
             className={`
               flex-1 px-6 py-2 rounded-lg
               bg-blue-600 text-white
               hover:bg-blue-700
               disabled:bg-blue-300
               transition-colors
-              flex items-center justify-center
+              flex items-center justify-center gap-2
             `}
           >
             {loading ? (
@@ -117,7 +159,7 @@ function ChatInterface({ messages, loading, onContinue, debateTitle, proAI, conA
           </button>
           <button
             onClick={() => setShowInterjectModal(true)}
-            disabled={loading}
+            disabled={loading || !messages.length}
             className={`
               px-6 py-2 rounded-lg
               bg-purple-600 text-white

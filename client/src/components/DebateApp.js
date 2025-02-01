@@ -11,25 +11,27 @@ function DebateApp() {
   const [conAI, setConAI] = useState('gpt');
   const [loading, setLoading] = useState(false);
   const [debateTitle, setDebateTitle] = useState('');
+  const [firstSpeaker, setFirstSpeaker] = useState(null);
 
   const handleStartDebate = async (setupData) => {
+    const { topic, proAI, conAI, firstSpeaker: initialSpeaker, analysis } = setupData;
+    setTopic(topic);
+    setProAI(proAI);
+    setConAI(conAI);
+    setDebateTitle(analysis.title);
+    setFirstSpeaker(initialSpeaker);
+    setIsDebating(true);
     setLoading(true);
+    
     try {
-      const { topic, proAI, conAI, firstSpeaker, analysis } = setupData;
-      setTopic(topic);
-      setProAI(proAI);
-      setConAI(conAI);
-      setDebateTitle(analysis.title);
-      
-      const currentAI = firstSpeaker === 'pro' ? proAI : conAI;
-      const response = await startDebate(topic, currentAI, firstSpeaker);
+      const currentAI = initialSpeaker === 'pro' ? proAI : conAI;
+      const response = await startDebate(topic, currentAI, initialSpeaker);
       
       setMessages([{
         content: response.message,
         ai: response.ai,
-        role: firstSpeaker
+        role: initialSpeaker
       }]);
-      setIsDebating(true);
     } catch (error) {
       console.error('Error starting debate:', error);
       alert('Failed to start debate. Please try again.');
@@ -88,23 +90,39 @@ function DebateApp() {
     setLoading(false);
   };
 
+  const handleAnalysis = (analysis) => {
+    // Set the title as soon as we get the analysis
+    setDebateTitle(analysis.title);
+  };
+
   return (
-    <div className="w-full h-full">
-      {!isDebating ? (
-        <div className="mx-auto h-screen flex items-center justify-center">
-          <DebateSetup onStart={handleStartDebate} />
-        </div>
-      ) : (
-        <ChatInterface
-          messages={messages}
-          loading={loading}
-          onContinue={handleContinueDebate}
-          onInterject={handleInterject}
-          proAI={proAI}
-          conAI={conAI}
-          debateTitle={debateTitle}
-        />
-      )}
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col items-center justify-center w-full sticky top-0 bg-white z-10 h-14">
+        <h1 className="text-center py-3 text-gray-800">
+          {debateTitle}
+        </h1>
+      </div>
+
+      <div className="flex flex-col flex-grow justify-center">
+        {!isDebating ? (
+          <div className="mx-auto h-full flex items-center justify-center">
+            <DebateSetup 
+              onStart={handleStartDebate} 
+              onAnalysis={handleAnalysis}
+            />
+          </div>
+        ) : (
+          <ChatInterface
+            messages={messages}
+            loading={loading}
+            onContinue={handleContinueDebate}
+            onInterject={handleInterject}
+            proAI={proAI}
+            conAI={conAI}
+            firstSpeaker={firstSpeaker}
+          />
+        )}
+      </div>
     </div>
   );
 }
