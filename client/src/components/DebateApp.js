@@ -113,6 +113,7 @@ function DebateApp() {
           </div>
         ) : (
           <ChatInterface
+            topic={topic}
             messages={messages}
             loading={loading}
             onContinue={handleContinueDebate}

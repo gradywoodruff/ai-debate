@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
 
-function ChatInterface({ messages, loading, onContinue, proAI, conAI, onInterject, firstSpeaker }) {
+function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onInterject, firstSpeaker }) {
   const messagesEndRef = useRef(null);
   const [showInterjectModal, setShowInterjectModal] = useState(false);
   const [interjection, setInterjection] = useState('');
@@ -41,6 +41,14 @@ function ChatInterface({ messages, loading, onContinue, proAI, conAI, onInterjec
   return (
     <div className="flex flex-col items-center justify-center min-h-full flex-grow">
       <div className="w-full space-y-6 h-full flex-grow py-12" style={{ maxWidth: '1000px' }}>
+        <div className="flex flex-col items-center justify-center">
+          <span className="text-sm font-semibold text-purple-600 mb-1">
+            Resolution
+          </span>
+          <p className="text-sm text-gray-700 italic">
+            {topic}
+          </p>
+        </div>
         {messages.map((message, index) => (
           message.role === 'moderator' ? (
             // Moderator message - centered with no bubble

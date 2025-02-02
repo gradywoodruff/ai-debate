@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { analyzeTopic } from '../services/api';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 function DebateSetup({ onStart, onAnalysis }) {
   const [topic, setTopic] = useState('');
@@ -80,32 +80,48 @@ function DebateSetup({ onStart, onAnalysis }) {
 
         <div className={`
           transition-all duration-500 ease-out
-          ${isAnalyzing ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'}
+          ${isAnalyzing ? 'opacity-100 max-h-none' : 'opacity-0 max-h-0 overflow-hidden'}
         `}>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="font-bold uppercase text-sm text-green-600">For</label>
-              {analysis && <p className="text-sm text-gray-600 mb-4">{analysis.proSummary}</p>}
-              <select
-                value={proAI}
-                onChange={(e) => setProAI(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              >
-                <option value="claude">Claude</option>
-                <option value="gpt">GPT-4</option>
-              </select>
+          <div className="flex gap-6">
+            <div className="flex-1 flex flex-col gap-8 border-2 rounded-lg border-green-600 border-solid p-4 justify-between" style={{ height: '300px' }}>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2 text-green-600">
+                  <ThumbsUp className="w-5 h-5" />
+                  <label className="font-bold uppercase text-sm">For</label>
+                </div>
+                {analysis && <p className="text-sm text-black mb-4">{analysis.proSummary}</p>}
+              </div>
+              <div className="w-full">
+                <label className="font-bold uppercase text-sm text-gray-400">Model</label>
+                <select
+                  value={proAI}
+                  onChange={(e) => setProAI(e.target.value)}
+                  className="w-full p-2 border rounded-lg"
+                >
+                  <option value="claude">Claude</option>
+                  <option value="gpt">GPT-4</option>
+                </select>
+              </div>
             </div>
-            <div className="flex-1">
-              <label className="font-bold uppercase text-sm text-red-600">Against</label>
-              {analysis && <p className="text-sm text-gray-600 mb-4">{analysis.conSummary}</p>}
-              <select
-                value={conAI}
-                onChange={(e) => setConAI(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              >
-                <option value="claude">Claude</option>
-                <option value="gpt">GPT-4</option>
-              </select>
+            <div className="flex-1 flex flex-col gap-8 border-2 rounded-lg border-red-600 border-solid p-4 justify-between" style={{ height: '300px' }}>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2 text-red-600">
+                  <ThumbsDown className="w-5 h-5" />
+                  <label className="font-bold uppercase text-sm">Against</label>
+                </div>
+                {analysis && <p className="text-sm text-black mb-4">{analysis.conSummary}</p>}
+              </div>
+              <div className="w-full">
+                <label className="font-bold uppercase text-sm text-gray-400">Model</label>
+                <select
+                  value={conAI}
+                  onChange={(e) => setConAI(e.target.value)}
+                  className="w-full p-2 border rounded-lg"
+                >
+                  <option value="claude">Claude</option>
+                  <option value="gpt">GPT-4</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -138,14 +154,26 @@ function DebateSetup({ onStart, onAnalysis }) {
       </div>
 
       {showCoinFlip && (
-        <div className="fixed inset-0 bg-purple-600 flex flex-col items-center justify-center">
+        <div className={`
+          fixed inset-0 flex flex-col items-center justify-center
+          transition-colors duration-500
+          ${!coinResult 
+            ? 'bg-purple-600' 
+            : coinResult === 'heads' 
+              ? 'bg-green-600' 
+              : 'bg-red-600'
+          }
+        `}>
           <div className="text-center">
             <div className={`
               w-32 h-32 mx-auto mb-8 rounded-full bg-white
               ${coinResult ? 'animate-none' : 'animate-flip'}
             `}>
               {coinResult && (
-                <div className="h-full flex items-center justify-center text-purple-600 text-2xl font-bold">
+                <div className={`
+                  h-full flex items-center justify-center text-2xl font-bold
+                  ${coinResult === 'heads' ? 'text-green-600' : 'text-red-600'}
+                `}>
                   {coinResult.toUpperCase()}
                 </div>
               )}
