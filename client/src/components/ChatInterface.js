@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
+import LoadingText from './LoadingText';
 
 function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onInterject, firstSpeaker }) {
   const messagesEndRef = useRef(null);
@@ -133,9 +134,7 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
                 }`}
               >
                 <div className="flex space-x-1 h-5 items-center">
-                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <LoadingText text="" className="text-gray-400" />
                 </div>
               </div>
             </div>
@@ -152,9 +151,8 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
             disabled={loading || !messages.length}
             className={`
               flex-1 px-6 py-2 rounded-lg
-              bg-blue-600 text-white
-              hover:bg-blue-700
-              disabled:bg-blue-300
+              bg-black text-white
+              disabled:bg-gray-600
               transition-colors
               flex items-center justify-center gap-2
             `}

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { analyzeTopic } from '../services/api';
 import { Loader2, ThumbsUp, ThumbsDown } from 'lucide-react';
+import LoadingText from './LoadingText';
 
 function DebateSetup({ onStart, onAnalysis }) {
   const [topic, setTopic] = useState('');
@@ -89,7 +90,9 @@ function DebateSetup({ onStart, onAnalysis }) {
                   <ThumbsUp className="w-5 h-5" />
                   <label className="font-bold uppercase text-sm">For</label>
                 </div>
-                {analysis && <p className="text-sm text-black mb-4">{analysis.proSummary}</p>}
+                <p className="text-sm text-black mb-4">
+                  {loading ? <LoadingText text="Loading summary" /> : analysis?.proSummary}
+                </p>
               </div>
               <div className="w-full">
                 <label className="font-bold uppercase text-sm text-gray-400">Model</label>
@@ -109,7 +112,9 @@ function DebateSetup({ onStart, onAnalysis }) {
                   <ThumbsDown className="w-5 h-5" />
                   <label className="font-bold uppercase text-sm">Against</label>
                 </div>
-                {analysis && <p className="text-sm text-black mb-4">{analysis.conSummary}</p>}
+                <p className="text-sm text-black mb-4">
+                  {loading ? <LoadingText text="Loading summary" /> : analysis?.conSummary}
+                </p>
               </div>
               <div className="w-full">
                 <label className="font-bold uppercase text-sm text-gray-400">Model</label>
@@ -187,8 +192,7 @@ function DebateSetup({ onStart, onAnalysis }) {
             </p>
             {coinResult && (
               <p className="text-xl text-white/80">
-                Preparing debate
-                <span className="animate-ellipsis">...</span>
+                <LoadingText text="Preparing debate" />
               </p>
             )}
           </div>
