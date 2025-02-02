@@ -1,179 +1,94 @@
-const { Anthropic } = require('@anthropic-ai/sdk');
 const axios = require('axios');
-
-const ANTHROPIC_SECRET_KEY = process.env.ANTHROPIC_SECRET_KEY;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const Anthropic = require('@anthropic-ai/sdk');
+const DEBATE_PROMPTS = require('../constants/prompts');
 
 const anthropic = new Anthropic({
-  apiKey: ANTHROPIC_SECRET_KEY
+  apiKey: process.env.ANTHROPIC_SECRET_KEY,
 });
 
-const generatePrompt = (topic, history, isProSide) => {
-  const stance = isProSide ? 'supporting' : 'opposing';
-  const context = `You are participating in a debate ${stance} the following topic: "${topic}".
-                   Your role is to provide thoughtful arguments while addressing points made by your opponent.
-                   When the moderator (human) interjects with questions or points, address them directly in your response.
-                   Keep responses under 150 words.`;
-  
-  if (history.length === 0) {
-    return `${context}\n\nMake your opening argument.`;
-  }
-  
-  // Update the formatting to include moderator messages
-  const formattedHistory = history.map((msg, index) => {
-    if (msg.role === 'moderator') {
-      return `Moderator: ${msg.content}`;
-    }
-    const role = msg.role === 'pro' ? 'Supporter' : 'Opponent';
-    return `${role} (${msg.ai}): ${msg.content}`;
-  }).join('\n\n');
-  
-  return `${context}\n\n
-Current Debate History:
-${formattedHistory}\n\n
-You are the ${isProSide ? 'Supporter' : 'Opponent'}. Provide your next argument, addressing the points made in the previous messages, including any moderator interjections.`;
-};
-
-// Rate limiter implementation
-class RateLimiter {
-  constructor(tokensPerMinute) {
-    this.tokens = tokensPerMinute;
-    this.maxTokens = tokensPerMinute;
-    this.lastRefill = Date.now();
-    this.tokensPerMs = tokensPerMinute / (60 * 1000); // tokens per millisecond
-  }
-
-  async getToken() {
-    this.refillTokens();
-    if (this.tokens < 1) {
-      const msToWait = (1 - this.tokens) / this.tokensPerMs;
-      console.log(`Rate limit reached, waiting ${Math.ceil(msToWait / 1000)} seconds`);
-      await delay(msToWait);
-      this.refillTokens();
-    }
-    this.tokens -= 1;
-    return true;
-  }
-
-  refillTokens() {
-    const now = Date.now();
-    const timePassed = now - this.lastRefill;
-    this.tokens = Math.min(
-      this.maxTokens,
-      this.tokens + timePassed * this.tokensPerMs
-    );
-    this.lastRefill = now;
-  }
-}
-
-// Create rate limiters for each service
-const gptLimiter = new RateLimiter(50); // 50 requests per minute
-const claudeLimiter = new RateLimiter(50);
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-const callClaude = async (prompt, retryCount = 0) => {
-  const MAX_RETRIES = 3;
-  try {
-    await claudeLimiter.getToken(); // Wait for rate limit
-    console.log('Calling Claude with prompt:', prompt);
-    
-    const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20240620",
-      max_tokens: 300,
-      temperature: 0.7,
-      messages: [{ role: 'user', content: prompt }]
-    });
-    
-    console.log('Claude response received');
-    const fullResponse = response.content.map(part => part.text).join('');
-    return fullResponse;
-  } catch (error) {
-    console.error('Claude API call failed:', error);
-    
-    if (error.status === 429 && retryCount < MAX_RETRIES) {
-      const retryAfter = 5000 * (retryCount + 1);
-      console.log(`Rate limited. Waiting ${retryAfter}ms before retry ${retryCount + 1}/${MAX_RETRIES}`);
-      await delay(retryAfter);
-      return callClaude(prompt, retryCount + 1);
-    }
-    
-    throw error;
-  }
-};
-
-const callGPT = async (prompt, retryCount = 0) => {
-  const MAX_RETRIES = 3;
-  try {
-    await gptLimiter.getToken(); // Wait for rate limit
-    console.log('Calling GPT with prompt:', prompt);
-    
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
-      temperature: 0.7
-    }, {
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log('GPT response status:', response.status);
-    return response.data.choices[0].message.content;
-  } catch (error) {
-    console.error('GPT API call failed:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-    });
-    
-    if (error.response?.status === 429 && retryCount < MAX_RETRIES) {
-      const retryAfter = parseInt(error.response.headers['retry-after'] || '5') * 1000;
-      console.log(`Rate limited. Waiting ${retryAfter}ms before retry ${retryCount + 1}/${MAX_RETRIES}`);
-      await delay(retryAfter);
-      return callGPT(prompt, retryCount + 1);
-    }
-    
-    throw error;
-  }
-};
-
 const startDebate = async (topic, currentAI, firstSpeaker) => {
-  const prompt = generatePrompt(topic, [], firstSpeaker === 'pro');
-  const response = await (currentAI === 'claude' ? callClaude(prompt) : callGPT(prompt));
-  
-  return {
-    message: response,
-    ai: currentAI,
-    role: firstSpeaker
-  };
+  try {
+    console.log('Making API request with:', { topic, currentAI, firstSpeaker });
+    
+    if (currentAI === 'gpt') {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-4",
+        messages: [
+          { role: "user", content: DEBATE_PROMPTS.startDebate(topic, firstSpeaker) }
+        ],
+        temperature: 0.7,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      return {
+        message: response.data.choices[0].message.content,
+        ai: currentAI
+      };
+    } else {
+      const response = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20240620",
+        max_tokens: 1024,
+        messages: [
+          { role: "user", content: DEBATE_PROMPTS.startDebate(topic, firstSpeaker) }
+        ],
+      });
+
+      return {
+        message: response.content[0].text,
+        ai: currentAI
+      };
+    }
+  } catch (error) {
+    console.error('Error in startDebate:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    throw error;
+  }
 };
 
 const continueDebate = async (topic, history, currentAI) => {
   try {
-    const isProSide = history.length % 2 === 0;
-    console.log('Continue debate:', {
-      currentAI,
-      isProSide,
-      historyLength: history.length,
-      topic
-    });
+    const lastDebateMessage = [...history].reverse().find(m => m.role !== 'moderator');
+    const nextRole = lastDebateMessage?.role === 'pro' ? 'con' : 'pro';
 
-    const prompt = generatePrompt(topic, history, isProSide);
-    console.log('Generated prompt:', prompt);
+    if (currentAI === 'gpt') {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-4",
+        messages: [
+          { role: "user", content: DEBATE_PROMPTS.continueDebate(topic, nextRole, history) }
+        ],
+        temperature: 0.7,
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-    const response = await (currentAI === 'claude' ? callClaude(prompt) : callGPT(prompt));
-    console.log('AI Response:', response);
-    
-    const result = {
-      message: response,
-      ai: currentAI,
-      role: isProSide ? 'pro' : 'con'
-    };
-    console.log('Returning result:', result);
-    return result;
+      return {
+        message: response.data.choices[0].message.content,
+        ai: currentAI
+      };
+    } else {
+      const response = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20240620",
+        max_tokens: 1024,
+        messages: [
+          { role: "user", content: DEBATE_PROMPTS.continueDebate(topic, nextRole, history) }
+        ],
+      });
+
+      return {
+        message: response.content[0].text,
+        ai: currentAI
+      };
+    }
   } catch (error) {
     console.error('Error in continueDebate:', error);
     throw error;

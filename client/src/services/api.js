@@ -12,11 +12,12 @@ export const startDebate = async (topic, currentAI, firstSpeaker) => {
   return response.data;
 };
 
-export const continueDebate = async (topic, history, currentAI) => {
+export const continueDebate = async (topic, history, currentAI, role) => {
   const response = await axios.post(`${API_BASE_URL}/debate/continue`, {
     topic,
     history,
-    currentAI
+    currentAI,
+    role
   });
   return response.data;
 };

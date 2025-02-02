@@ -7,6 +7,7 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
   const [showInterjectModal, setShowInterjectModal] = useState(false);
   const [interjection, setInterjection] = useState('');
   const [nextSpeaker, setNextSpeaker] = useState('pro');
+  const [currentSpeaker, setCurrentSpeaker] = useState(firstSpeaker);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -16,27 +17,34 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
     scrollToBottom();
   }, [messages]);
 
+  // Update currentSpeaker when messages change
+  useEffect(() => {
+    if (!messages.length) {
+      setCurrentSpeaker(firstSpeaker);
+      return;
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.role === 'moderator') {
+      // If moderator specified next speaker, use that
+      setCurrentSpeaker(lastMessage.nextSpeaker);
+    } else {
+      // Otherwise alternate speakers
+      setCurrentSpeaker(lastMessage.role === 'pro' ? 'con' : 'pro');
+    }
+  }, [messages, firstSpeaker]);
+
   const handleInterject = () => {
-    // Add the interjection to messages and close modal
     const newMessage = {
       content: interjection,
       role: 'moderator',
-      ai: 'human'
+      ai: 'human',
+      nextSpeaker
     };
     
-    // Here you would need to update your parent component's messages state
-    // You'll need to add an onInterject prop and handle this in DebateApp.js
     onInterject(newMessage, nextSpeaker);
-    
     setInterjection('');
     setShowInterjectModal(false);
-  };
-
-  // Determine who's typing
-  const getTypingRole = () => {
-    if (!messages.length) return firstSpeaker; // Use firstSpeaker instead of defaulting to 'pro'
-    const lastMessage = messages[messages.length - 1];
-    return lastMessage.role === 'pro' ? 'con' : 'pro';
   };
 
   return (
@@ -46,7 +54,7 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
           <span className="text-sm font-semibold text-purple-600 mb-1">
             Resolution
           </span>
-          <p className="text-sm text-gray-700 italic">
+          <p className="text-sm text-gray-700 italic max-w-xl">
             {topic}
           </p>
         </div>
@@ -57,7 +65,7 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
               <span className="text-sm font-semibold text-purple-600 mb-1">
                 Moderator
               </span>
-              <p className="text-sm text-gray-700 italic">
+              <p className="text-sm text-gray-700 italic max-w-xl">
                 {message.content}
               </p>
             </div>
@@ -93,7 +101,7 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
                       : "border border-red-400 border-r-[6px]"
                   }`}
                 >
-                  <p className="text-sm text-black">
+                  <p className="text-md text-black">
                     {message.content}
                   </p>
                 </div>
@@ -105,30 +113,30 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
         {/* Typing Indicator */}
         {(loading || (!messages.length)) && (
           <div 
-            className={`flex ${getTypingRole() === 'pro' ? "justify-start" : "justify-end"}`}
+            className={`flex ${currentSpeaker === 'pro' ? "justify-start" : "justify-end"}`}
           >
             <div
               className={`max-w-[70%] flex items-end gap-2 ${
-                getTypingRole() === 'pro' ? "flex-row" : "flex-row-reverse"
+                currentSpeaker === 'pro' ? "flex-row" : "flex-row-reverse"
               }`}
             >
               <div
                 className={`flex flex-col items-center ${
-                  getTypingRole() === 'pro' ? "text-green-600" : "text-red-600"
+                  currentSpeaker === 'pro' ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {getTypingRole() === 'pro' ? (
+                {currentSpeaker === 'pro' ? (
                   <ThumbsUp className="w-5 h-5 mb-1" />
                 ) : (
                   <ThumbsDown className="w-5 h-5 mb-1" />
                 )}
                 <div className="text-xs font-medium">
-                  {getTypingRole() === 'pro' ? proAI : conAI}
+                  {currentSpeaker === 'pro' ? proAI : conAI}
                 </div>
               </div>
               <div
                 className={`p-4 rounded-2xl bg-white ${
-                  getTypingRole() === 'pro'
+                  currentSpeaker === 'pro'
                     ? "border border-green-400 border-l-[6px]"
                     : "border border-red-400 border-r-[6px]"
                 }`}

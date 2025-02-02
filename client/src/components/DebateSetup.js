@@ -16,10 +16,17 @@ function DebateSetup({ onStart, onAnalysis }) {
 
   useEffect(() => {
     if (textAreaRef.current) {
-      textAreaRef.current.style.height = "auto";
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+      if (isAnalyzing) {
+        setTimeout(() => {
+          textAreaRef.current.style.height = "auto";
+          textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+        }, 500);
+      } else {
+        textAreaRef.current.style.height = "auto";
+        textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+      }
     }
-  }, [topic]);
+  }, [topic, isAnalyzing]);
 
   const handleAnalyzeTopic = async (e) => {
     e.preventDefault();

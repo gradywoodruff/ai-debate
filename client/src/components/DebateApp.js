@@ -44,12 +44,11 @@ function DebateApp() {
     setLoading(true);
     
     try {
-      // Find the last non-moderator message to determine next speaker
       const lastDebateMessage = [...messages].reverse().find(m => m.role !== 'moderator');
       const nextRole = lastDebateMessage?.role === 'pro' ? 'con' : 'pro';
       const currentAI = nextRole === 'pro' ? proAI : conAI;
       
-      const response = await continueDebate(topic, messages, currentAI);
+      const response = await continueDebate(topic, messages, currentAI, nextRole);
       
       const newMessage = {
         content: response.message,
@@ -69,19 +68,16 @@ function DebateApp() {
   const handleInterject = async (interjection, nextSpeaker) => {
     setLoading(true);
     try {
-      // Add the interjection to messages
       const updatedMessages = [...messages, interjection];
       setMessages(updatedMessages);
       
-      // Continue the debate with the specified next speaker
       const currentAI = nextSpeaker === 'pro' ? proAI : conAI;
-      const response = await continueDebate(topic, updatedMessages, currentAI);
+      const response = await continueDebate(topic, updatedMessages, currentAI, nextSpeaker);
       
-      // Use nextSpeaker to determine the role instead of message length
       setMessages(prev => [...prev, {
         content: response.message,
         ai: response.ai,
-        role: nextSpeaker // This ensures the role matches what we selected
+        role: nextSpeaker
       }]);
     } catch (error) {
       console.error('Error handling interjection:', error);

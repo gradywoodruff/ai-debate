@@ -2,15 +2,21 @@ const express = require('express');
 const router = express.Router();
 const { startDebate, continueDebate } = require('../services/aiService');
 const axios = require('axios');
+const DEBATE_PROMPTS = require('../constants/prompts');
 
 router.post('/start', async (req, res) => {
   try {
-    const { topic, proAI, conAI } = req.body;
-    const response = await startDebate(topic, proAI, conAI);
+    const { topic, currentAI, firstSpeaker } = req.body;
+    console.log('Starting debate with:', { topic, currentAI, firstSpeaker });
+    
+    const response = await startDebate(topic, currentAI, firstSpeaker);
     res.json(response);
   } catch (error) {
-    console.error('Server error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Server error in /start:', error.response?.data || error);
+    res.status(500).json({ 
+      error: error.message,
+      details: error.response?.data || 'No additional details'
+    });
   }
 });
 
@@ -32,24 +38,11 @@ router.post('/continue', async (req, res) => {
 router.post('/analyze-topic', async (req, res) => {
   try {
     const { topic } = req.body;
-    const prompt = `Analyze this debate topic: "${topic}"
     
-    Please provide the following in JSON format:
-    1. A concise, engaging title for the debate (4-8 words)
-    2. A brief summary of the pro (supporting) stance (2-3 sentences)
-    3. A brief summary of the con (opposing) stance (2-3 sentences)
-    
-    Format:
-    {
-      "title": "your title here",
-      "proSummary": "pro stance summary",
-      "conSummary": "con stance summary"
-    }`;
-
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: "gpt-4",
       messages: [
-        { role: "user", content: prompt }
+        { role: "user", content: DEBATE_PROMPTS.analyze(topic) }
       ],
       temperature: 0.7,
     }, {
