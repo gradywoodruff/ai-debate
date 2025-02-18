@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
 import LoadingText from './LoadingText';
+import PersuasionMeter from './PersuasionMeter';
 
 function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onInterject, firstSpeaker }) {
   const messagesEndRef = useRef(null);
@@ -48,111 +49,115 @@ function ChatInterface({ topic,messages, loading, onContinue, proAI, conAI, onIn
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-full flex-grow">
-      <div className="w-full space-y-6 h-full flex-grow py-12" style={{ maxWidth: '1000px' }}>
-        <div className="flex flex-col items-center justify-center">
-          <span className="text-sm font-semibold text-purple-600 mb-1">
-            Resolution
-          </span>
-          <p className="text-sm text-gray-700 italic max-w-xl">
-            {topic}
-          </p>
-        </div>
-        {messages.map((message, index) => (
-          message.role === 'moderator' ? (
-            // Moderator message - centered with no bubble
-            <div key={index} className="flex flex-col items-center text-center px-4">
-              <span className="text-sm font-semibold text-purple-600 mb-1">
-                Moderator
-              </span>
-              <p className="text-sm text-gray-700 italic max-w-xl">
-                {message.content}
-              </p>
-            </div>
-          ) : (
-            // Regular debate message - using message.role instead of index
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto pb-32">
+        <div className="w-full space-y-6 h-full flex-grow py-12" style={{ maxWidth: '1000px' }}>
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-sm font-semibold text-purple-600 mb-1">
+              Resolution
+            </span>
+            <p className="text-sm text-gray-700 italic max-w-xl">
+              {topic}
+            </p>
+          </div>
+          {messages.map((message, index) => (
+            message.role === 'moderator' ? (
+              // Moderator message - centered with no bubble
+              <div key={index} className="flex flex-col items-center text-center px-4">
+                <span className="text-sm font-semibold text-purple-600 mb-1">
+                  Moderator
+                </span>
+                <p className="text-sm text-gray-700 italic max-w-xl">
+                  {message.content}
+                </p>
+              </div>
+            ) : (
+              // Regular debate message - using message.role instead of index
+              <div 
+                key={index} 
+                className={`flex px-[10px] ${message.role === 'pro' ? "justify-start" : "justify-end"}`}
+              >
+                <div
+                  className={`max-w-[90%] md:max-w-[70%] flex items-end gap-2 ${
+                    message.role === 'pro' ? "flex-row" : "flex-row-reverse"
+                  }`}
+                >
+                  <div
+                    className={`flex flex-col items-center ${
+                      message.role === 'pro' ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {message.role === 'pro' ? (
+                      <ThumbsUp className="w-5 h-5 mb-1" />
+                    ) : (
+                      <ThumbsDown className="w-5 h-5 mb-1" />
+                    )}
+                    <div className="text-xs font-medium">
+                      {message.ai || (message.role === 'pro' ? proAI : conAI)}
+                    </div>
+                  </div>
+                  <div
+                    className={`p-4 rounded-2xl bg-white ${
+                      message.role === 'pro'
+                        ? "border border-green-400 border-l-[6px]"
+                        : "border border-red-400 border-r-[6px]"
+                    }`}
+                  >
+                    <p className="text-md text-black">
+                      {message.content}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          ))}
+          
+          {/* Typing Indicator */}
+          {(loading || (!messages.length)) && (
             <div 
-              key={index} 
-              className={`flex ${message.role === 'pro' ? "justify-start" : "justify-end"}`}
+              className={`flex px-[10px] ${currentSpeaker === 'pro' ? "justify-start" : "justify-end"}`}
             >
               <div
-                className={`max-w-[70%] flex items-end gap-2 ${
-                  message.role === 'pro' ? "flex-row" : "flex-row-reverse"
+                className={`max-w-[90%] md:max-w-[70%] flex items-end gap-2 ${
+                  currentSpeaker === 'pro' ? "flex-row" : "flex-row-reverse"
                 }`}
               >
                 <div
                   className={`flex flex-col items-center ${
-                    message.role === 'pro' ? "text-green-600" : "text-red-600"
+                    currentSpeaker === 'pro' ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {message.role === 'pro' ? (
+                  {currentSpeaker === 'pro' ? (
                     <ThumbsUp className="w-5 h-5 mb-1" />
                   ) : (
                     <ThumbsDown className="w-5 h-5 mb-1" />
                   )}
                   <div className="text-xs font-medium">
-                    {message.ai || (message.role === 'pro' ? proAI : conAI)}
+                    {currentSpeaker === 'pro' ? proAI : conAI}
                   </div>
                 </div>
                 <div
                   className={`p-4 rounded-2xl bg-white ${
-                    message.role === 'pro'
+                    currentSpeaker === 'pro'
                       ? "border border-green-400 border-l-[6px]"
                       : "border border-red-400 border-r-[6px]"
                   }`}
                 >
-                  <p className="text-md text-black">
-                    {message.content}
-                  </p>
+                  <div className="flex space-x-1 h-5 items-center">
+                    <LoadingText text="" className="text-gray-400" />
+                  </div>
                 </div>
               </div>
             </div>
-          )
-        ))}
-        
-        {/* Typing Indicator */}
-        {(loading || (!messages.length)) && (
-          <div 
-            className={`flex ${currentSpeaker === 'pro' ? "justify-start" : "justify-end"}`}
-          >
-            <div
-              className={`max-w-[70%] flex items-end gap-2 ${
-                currentSpeaker === 'pro' ? "flex-row" : "flex-row-reverse"
-              }`}
-            >
-              <div
-                className={`flex flex-col items-center ${
-                  currentSpeaker === 'pro' ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {currentSpeaker === 'pro' ? (
-                  <ThumbsUp className="w-5 h-5 mb-1" />
-                ) : (
-                  <ThumbsDown className="w-5 h-5 mb-1" />
-                )}
-                <div className="text-xs font-medium">
-                  {currentSpeaker === 'pro' ? proAI : conAI}
-                </div>
-              </div>
-              <div
-                className={`p-4 rounded-2xl bg-white ${
-                  currentSpeaker === 'pro'
-                    ? "border border-green-400 border-l-[6px]"
-                    : "border border-red-400 border-r-[6px]"
-                }`}
-              >
-                <div className="flex space-x-1 h-5 items-center">
-                  <LoadingText text="" className="text-gray-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       <div className="w-full sticky bottom-0 bg-white p-4 space-y-4">
+        <PersuasionMeter scores={messages[messages.length - 1]?.scores} className="mb-4" />
+        
         <div className="flex gap-4">
           <button
             onClick={onContinue}

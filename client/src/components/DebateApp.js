@@ -53,7 +53,8 @@ function DebateApp() {
       const newMessage = {
         content: response.message,
         ai: response.ai,
-        role: nextRole
+        role: nextRole,
+        scores: response.scores
       };
       
       setMessages(prevMessages => [...prevMessages, newMessage]);
@@ -99,9 +100,9 @@ function DebateApp() {
         </h1>
       </div>
 
-      <div className="flex flex-col flex-grow justify-center">
+      <div className="container mx-auto flex flex-col flex-grow justify-center">
         {!isDebating ? (
-          <div className="mx-auto h-full flex items-center justify-center">
+          <div className="mx-auto w-full h-full flex items-center justify-center">
             <DebateSetup 
               onStart={handleStartDebate} 
               onAnalysis={handleAnalysis}

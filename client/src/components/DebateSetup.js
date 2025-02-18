@@ -63,8 +63,8 @@ function DebateSetup({ onStart, onAnalysis }) {
   };
 
   return (
-    <form onSubmit={isAnalyzing ? handleStartDebate : handleAnalyzeTopic} style={{ width: '1000px' }}>
-      <div className="space-y-6">
+    <form onSubmit={isAnalyzing ? handleStartDebate : handleAnalyzeTopic} className='font-medium' style={{ width: '100%' }}>
+      <div className="space-y-6 px-[10px]">
         <div className={`
           bg-white transition-all duration-500 ease-out
           ${isAnalyzing ? 'mb-12' : ''}
@@ -81,7 +81,7 @@ function DebateSetup({ onStart, onAnalysis }) {
               focus:outline-none focus:none resize-none 
               placeholder:text-purple-200
               transition-all duration-500 disabled:bg-white
-              ${isAnalyzing ? 'text-4xl' : 'text-8xl'}
+              ${isAnalyzing ? 'text-4xl' : 'text-6xl md:text-8xl'}
             `}
           />
         </div>
@@ -90,7 +90,7 @@ function DebateSetup({ onStart, onAnalysis }) {
           transition-all duration-500 ease-out
           ${isAnalyzing ? 'opacity-100 max-h-none' : 'opacity-0 max-h-0 overflow-hidden'}
         `}>
-          <div className="flex gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 flex flex-col gap-8 border-2 rounded-lg border-green-600 border-solid p-4 justify-between" style={{ height: '300px' }}>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 text-green-600">
